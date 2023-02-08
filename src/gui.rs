@@ -37,6 +37,7 @@ pub struct MyApp {
     running: bool,
     word: String,
     rate: f32,
+    font_size: f32,
     picked_path: PathBuf,
     gui_conf: GuiSettingsContainer,
     rate_lock: Arc<RwLock<f32>>,
@@ -56,6 +57,7 @@ impl MyApp {
             running: false,
             word: "Hallo".to_string(),
             rate: 120.0,
+            font_size: 50.0,
             picked_path: PathBuf::new(),
             gui_conf,
             rate_lock,
@@ -75,7 +77,7 @@ impl eframe::App for MyApp {
             }
 
             ui.vertical_centered(|ui| {
-                ui.label(RichText::new(&self.word).size(50.0).strong());
+                ui.label(RichText::new(&self.word).size(self.font_size).strong());
             });
             ui.add_space(ui.available_size().y * 0.3);
 
@@ -126,7 +128,12 @@ impl eframe::App for MyApp {
                 }
             });
             ui.add_space(ui.available_size().y - 15.0);
-            global_dark_light_mode_buttons(ui);
+            ui.horizontal(|ui|{
+                global_dark_light_mode_buttons(ui);
+                ui.label("  Schriftgrösse: ");
+                ui.add(egui::Slider::new(&mut self.font_size, 40.0..=200.0));
+            });
+
             self.gui_conf.dark_mode = ui.visuals() == &Visuals::dark();
         });
 
