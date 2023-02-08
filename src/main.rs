@@ -113,11 +113,18 @@ fn main() {
     let gui_word_lock = word_lock.clone();
     let gui_running_lock = running_lock.clone();
 
+    let visuals;
+    if gui_settings.dark_mode{
+        visuals = Visuals::dark();
+    } else {
+        visuals = Visuals::light();
+    }
+
     eframe::run_native(
         "Word Nerd",
         options,
         Box::new(|_cc| {
-            _cc.egui_ctx.set_visuals(Visuals::dark());
+            _cc.egui_ctx.set_visuals(visuals);
             Box::new(MyApp::new(
                 gui_rate_lock,
                 gui_running_lock,

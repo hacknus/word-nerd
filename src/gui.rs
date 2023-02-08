@@ -21,6 +21,7 @@ const MAX_FPS: f64 = 24.0;
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct GuiSettingsContainer {
     pub rate: f32,
+    pub dark_mode: bool,
     pub x: f32,
     pub y: f32,
 }
@@ -29,6 +30,7 @@ impl GuiSettingsContainer {
     pub fn default() -> GuiSettingsContainer {
         return GuiSettingsContainer {
             rate: 120.0,
+            dark_mode: false,
             x: 450.0,
             y: 900.0,
         };
@@ -36,7 +38,6 @@ impl GuiSettingsContainer {
 }
 
 pub struct MyApp {
-    dark_mode: bool,
     running: bool,
     word: String,
     rate: f32,
@@ -56,7 +57,6 @@ impl MyApp {
                load_tx: Sender<PathBuf>,
     ) -> Self {
         Self {
-            dark_mode: true,
             running: false,
             word: "A".to_string(),
             rate: 120.0,
@@ -74,7 +74,6 @@ impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.add_space(ui.available_size().y * 0.3);
-
             if let Ok(read_guard) = self.word_lock.read() {
                 self.word = read_guard.clone()
             }
@@ -87,19 +86,19 @@ impl eframe::App for MyApp {
             ui.vertical_centered(|ui| {
                 let b_text;
                 if self.running {
-                    b_text = "Stopp";
+                    b_text = RichText::new("Stopp").size(20.0).strong();
                 } else {
-                    b_text = "Start";
+                    b_text = RichText::new("Start").size(20.0).strong();
                 }
                 let events = ui.input().events.clone();
                 let mut space_pressed = false;
                 for event in &events {
                     match event {
-                        egui::Event::Key{key, pressed, modifiers} => {
+                        egui::Event::Key { key, pressed, modifiers } => {
                             if *key == Space && *pressed == false {
                                 space_pressed = true;
                             }
-                        },
+                        }
                         _ => {}
                     }
                 }
@@ -108,9 +107,13 @@ impl eframe::App for MyApp {
                     self.running = !self.running;
                 }
                 ui.add_space(10.0);
-                ui.label("Frequenz");
-                ui.add(DragValue::new(&mut self.rate).clamp_range(10.0..=800.0).suffix(" wpm"));
+                ui.label(RichText::new("Frequenz").size(20.0).strong());
+                ui.add(DragValue::new(&mut self.rate).fixed_decimals(0).clamp_range(10.0..=800.0).suffix(" wpm"));
+                ui.add_space(10.0);
             });
+            ui.add_space(ui.available_size().y - 15.0);
+            global_dark_light_mode_buttons(ui);
+            self.gui_conf.dark_mode = ui.visuals() == &Visuals::dark();
         });
 
         if let Ok(mut write_guard) = self.rate_lock.write() {
