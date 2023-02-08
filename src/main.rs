@@ -47,14 +47,13 @@ fn main_thread(rate_lock: Arc<RwLock<f32>>,
         match load_rx.recv_timeout(Duration::from_millis(10)) {
             Ok(fp) => {
                 // load file
-                words.push(word.clone());
+                words = read_words_from_file(&fp);
             }
             Err(..) => ()
         }
 
         if running {
             // get random word out of words
-
             let idx = random::<usize>() % words.len();
             word = words[idx].clone();
 

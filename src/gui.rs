@@ -110,6 +110,24 @@ impl eframe::App for MyApp {
                 ui.label(RichText::new("Frequenz").size(20.0).strong());
                 ui.add(DragValue::new(&mut self.rate).fixed_decimals(0).clamp_range(10.0..=800.0).suffix(" wpm"));
                 ui.add_space(10.0);
+
+                if ui.button("Datei öffnen").clicked() {
+                    match rfd::FileDialog::new().pick_file() {
+                        Some(path) =>
+                            {
+                                self.picked_path = path;
+                            }
+                        None => self.picked_path = PathBuf::new()
+                    }
+
+                    println!("opening a new file");
+                    match self.load_tx.send(self.picked_path.clone()) {
+                        Ok(_) => {}
+                        Err(err) => {
+                            println!("error in scan_tx send: {err:?}");
+                        }
+                    }
+                }
             });
             ui.add_space(ui.available_size().y - 15.0);
             global_dark_light_mode_buttons(ui);
