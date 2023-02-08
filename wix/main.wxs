@@ -61,8 +61,8 @@
 
     <Product
         Id='*'
-        Name='serial-monitor-rust'
-        UpgradeCode='1A58967B-4E4E-4C4C-A4A0-E162B36ACE74'
+        Name='word-nerd'
+        UpgradeCode='0338D335-6868-43C2-84F0-FF0589C06FBC'
         Manufacturer='Linus Leo Stöckli'
         Language='1033'
         Codepage='1252'
@@ -70,7 +70,7 @@
 
         <Package Id='*'
             Keywords='Installer'
-            Description='Serial Monitor and Plotter written in rust.'
+            Description='A speed reader written in rust.'
             Manufacturer='Linus Leo Stöckli'
             InstallerVersion='450'
             Languages='1033'
@@ -84,11 +84,11 @@
             DowngradeErrorMessage='A newer version of [ProductName] is already installed. Setup will now exit.'/>
 
         <Media Id='1' Cabinet='media1.cab' EmbedCab='yes' DiskPrompt='CD-ROM #1'/>
-        <Property Id='DiskPrompt' Value='serial-monitor-rust Installation'/>
+        <Property Id='DiskPrompt' Value='word-nerd Installation'/>
 
         <Directory Id='TARGETDIR' Name='SourceDir'>
             <Directory Id='$(var.PlatformProgramFilesFolder)' Name='PFiles'>
-                <Directory Id='APPLICATIONFOLDER' Name='serial-monitor-rust'>
+                <Directory Id='APPLICATIONFOLDER' Name='word-nerd'>
                     <!--
                       Disabling the license sidecar file in the installer is a two step process:
 
@@ -105,7 +105,7 @@
                     </Component>
                     
                     <Directory Id='Bin' Name='bin'>
-                        <Component Id='Path' Guid='8CBDE73E-95EA-44F2-B276-C8621A98423C' KeyPath='yes'>
+                        <Component Id='Path' Guid='FADD5DBB-7F6C-4411-8008-035349C575B4' KeyPath='yes'>
                             <Environment
                                 Id='PATH'
                                 Name='PATH'
@@ -118,9 +118,9 @@
                         <Component Id='binary0' Guid='*'>
                             <File
                                 Id='exe0'
-                                Name='serial-monitor-rust.exe'
+                                Name='word-nerd.exe'
                                 DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\serial-monitor-rust.exe'
+                                Source='$(var.CargoTargetBinDir)\word-nerd.exe'
                                 KeyPath='yes'/>
                         </Component>
                     </Directory>
@@ -167,7 +167,7 @@
         <!--<Icon Id='ProductICO' SourceFile='wix\Product.ico'/>-->
         <!--<Property Id='ARPPRODUCTICON' Value='ProductICO' />-->
 
-        <Property Id='ARPHELPLINK' Value='https://github.com/hacknus/serial-monitor-rust'/>
+        <Property Id='ARPHELPLINK' Value='https://github.com/hacknus/word-nerdt'/>
         
         <UI>
             <UIRef Id='WixUI_FeatureTree'/>

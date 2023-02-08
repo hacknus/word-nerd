@@ -5,10 +5,8 @@ extern crate preferences;
 extern crate core;
 
 mod gui;
-mod toggle;
 mod io;
 
-use std::cmp::max;
 use std::path::PathBuf;
 use std::thread;
 use eframe::egui::{vec2, Visuals};
@@ -30,10 +28,10 @@ fn main_thread(rate_lock: Arc<RwLock<f32>>,
                load_rx: Receiver<PathBuf>,
 ) {
     // reads data from mutex, samples and saves if needed
-    let mut file_path = PathBuf::from("abc.txt");
     let mut rate = 120.0;
     let mut running = false;
-    let mut word = "A".to_string();
+    let mut word;
+    let file_path = PathBuf::from("abc.txt");
     let mut words = read_words_from_file(&file_path);
     loop {
         if let Ok(read_guard) = running_lock.read() {
@@ -85,7 +83,7 @@ fn main() {
 
     let running_lock = Arc::new(RwLock::new(false));
     let rate_lock = Arc::new(RwLock::new(gui_settings.rate));
-    let word_lock = Arc::new(RwLock::new("HELLO".to_string()));
+    let word_lock = Arc::new(RwLock::new("Hallo!".to_string()));
 
     let (load_tx, load_rx): (Sender<PathBuf>, Receiver<PathBuf>) = mpsc::channel();
 
@@ -94,7 +92,7 @@ fn main() {
     let main_running_lock = running_lock.clone();
 
     println!("starting main thread..");
-    let main_thread_handler = thread::spawn(|| {
+    thread::spawn(|| {
         main_thread(main_rate_lock,
                     main_running_lock,
                     main_word_lock,

@@ -1,17 +1,13 @@
 use core::f32;
-use std::ops::RangeInclusive;
 use std::path::PathBuf;
 use std::sync::mpsc::{Sender};
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 use eframe::{egui, Storage};
-use eframe::egui::panel::{Side};
-use eframe::egui::plot::{Legend, Line, Plot, PlotPoints};
-use eframe::egui::{FontId, FontFamily, RichText, global_dark_light_mode_buttons, Visuals, Direction, DragValue};
+use eframe::egui::{ RichText, global_dark_light_mode_buttons, Visuals, DragValue};
 use eframe::egui::Key::Space;
-use crate::toggle::toggle;
 use preferences::{Preferences};
-use crate::{APP_INFO, vec2};
+use crate::{APP_INFO};
 use serde::{Deserialize, Serialize};
 
 
@@ -58,7 +54,7 @@ impl MyApp {
     ) -> Self {
         Self {
             running: false,
-            word: "A".to_string(),
+            word: "Hallo".to_string(),
             rate: 120.0,
             picked_path: PathBuf::new(),
             gui_conf,
@@ -94,7 +90,7 @@ impl eframe::App for MyApp {
                 let mut space_pressed = false;
                 for event in &events {
                     match event {
-                        egui::Event::Key { key, pressed, modifiers } => {
+                        egui::Event::Key { key, pressed,.. } => {
                             if *key == Space && *pressed == false {
                                 space_pressed = true;
                             }
@@ -107,7 +103,7 @@ impl eframe::App for MyApp {
                     self.running = !self.running;
                 }
                 ui.add_space(10.0);
-                ui.label(RichText::new("Frequenz").size(20.0).strong());
+                ui.label(RichText::new("Frequenz:").size(20.0).strong());
                 ui.add(DragValue::new(&mut self.rate).fixed_decimals(0).clamp_range(10.0..=800.0).suffix(" wpm"));
                 ui.add_space(10.0);
 
