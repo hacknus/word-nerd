@@ -3,7 +3,6 @@
 extern crate serde;
 extern crate preferences;
 extern crate core;
-extern crate csv;
 
 mod gui;
 mod toggle;
@@ -17,6 +16,8 @@ use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, mpsc, RwLock};
 use std::time::{Duration};
 use preferences::{AppInfo, Preferences};
+use rand::random;
+use io::read_words_from_file;
 
 use crate::gui::{GuiSettingsContainer, MyApp};
 
@@ -33,7 +34,7 @@ fn main_thread(rate_lock: Arc<RwLock<f32>>,
     let mut rate = 120.0;
     let mut running = false;
     let mut word = "A".to_string();
-    let mut words = vec![];
+    let mut words = read_words_from_file(&file_path);
     loop {
         if let Ok(read_guard) = running_lock.read() {
             running = read_guard.clone();
@@ -53,13 +54,17 @@ fn main_thread(rate_lock: Arc<RwLock<f32>>,
 
         if running {
             // get random word out of words
+
+            let idx = random::<usize>() % words.len();
+            word = words[idx].clone();
+
             if let Ok(mut write_guard) = word_lock.write() {
                 *write_guard = word.clone();
             }
         }
 
 
-        std::thread::sleep(Duration::from_millis((rate / 60.0) as u64 * 1000));
+        std::thread::sleep(Duration::from_millis((60.0 / rate * 1000.0) as u64));
     }
 }
 

@@ -7,7 +7,8 @@ use std::time::Duration;
 use eframe::{egui, Storage};
 use eframe::egui::panel::{Side};
 use eframe::egui::plot::{Legend, Line, Plot, PlotPoints};
-use eframe::egui::{FontId, FontFamily, RichText, global_dark_light_mode_buttons, Visuals};
+use eframe::egui::{FontId, FontFamily, RichText, global_dark_light_mode_buttons, Visuals, Direction, DragValue};
+use eframe::egui::Key::Space;
 use crate::toggle::toggle;
 use preferences::{Preferences};
 use crate::{APP_INFO, vec2};
@@ -71,26 +72,58 @@ impl MyApp {
 
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-
         egui::CentralPanel::default().show(ctx, |ui| {
-            let height = ui.available_size().y * 0.45;
-            let spacing = (ui.available_size().y - 2.0 * height) / 3.5 - 10.0;
-            let border = 10.0;
-            ui.add_space(spacing);
-            ui.horizontal(|ui| {
-                ui.add_space(border);
-                ui.vertical(|ui| {
+            ui.add_space(ui.available_size().y * 0.3);
 
+            if let Ok(read_guard) = self.word_lock.read() {
+                self.word = read_guard.clone()
+            }
 
+            ui.vertical_centered(|ui| {
+                ui.label(RichText::new(&self.word).size(50.0).strong());
+            });
+            ui.add_space(ui.available_size().y * 0.3);
 
-                    ctx.request_repaint()
-                });
-                ui.add_space(border);
+            ui.vertical_centered(|ui| {
+                let b_text;
+                if self.running {
+                    b_text = "Stopp";
+                } else {
+                    b_text = "Start";
+                }
+                let events = ui.input().events.clone();
+                let mut space_pressed = false;
+                for event in &events {
+                    match event {
+                        egui::Event::Key{key, pressed, modifiers} => {
+                            if *key == Space && *pressed == false {
+                                space_pressed = true;
+                            }
+                        },
+                        _ => {}
+                    }
+                }
+
+                if ui.button(b_text).clicked() || space_pressed {
+                    self.running = !self.running;
+                }
+                ui.add_space(10.0);
+                ui.label("Frequenz");
+                ui.add(DragValue::new(&mut self.rate).clamp_range(10.0..=800.0).suffix(" wpm"));
             });
         });
 
+        if let Ok(mut write_guard) = self.rate_lock.write() {
+            *write_guard = self.rate.clone();
+        }
+        if let Ok(mut write_guard) = self.running_lock.write() {
+            *write_guard = self.running.clone();
+        }
+
         self.gui_conf.x = ctx.used_size().x;
         self.gui_conf.y = ctx.used_size().y;
+
+        ctx.request_repaint();
 
         std::thread::sleep(Duration::from_millis((1000.0 / MAX_FPS) as u64));
     }
