@@ -32,7 +32,11 @@ fn main_thread(rate_lock: Arc<RwLock<f32>>,
     let mut running = false;
     let mut word;
     let file_path = PathBuf::from("abc.txt");
-    let mut words = read_words_from_file(&file_path);
+    let mut words = vec!["keine gültige Datei gefunden".to_string()];
+    match read_words_from_file(&file_path){
+        None => {}
+        Some(w) => {words = w}
+    }
     loop {
         if let Ok(read_guard) = running_lock.read() {
             running = read_guard.clone();
@@ -45,7 +49,9 @@ fn main_thread(rate_lock: Arc<RwLock<f32>>,
         match load_rx.recv_timeout(Duration::from_millis(10)) {
             Ok(fp) => {
                 // load file
-                words = read_words_from_file(&fp);
+                if let Some(w) = read_words_from_file(&fp) {
+                    words = w;
+                }
             }
             Err(..) => ()
         }
