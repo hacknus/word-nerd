@@ -91,12 +91,23 @@ impl eframe::App for MyApp {
                 if ui.input(|i| i.key_released(egui::Key::Space)) {
                     space_pressed = true;
                 }
+                if ui.input(|i| i.key_pressed(egui::Key::ArrowUp)) {
+                    if self.conf.rate <= 800.0 {
+                        self.conf.rate += 1.0;
+                    }
+                }
+                if ui.input(|i| i.key_pressed(egui::Key::ArrowDown)) {
+                    if self.conf.rate >= 10.0 {
+                        self.conf.rate -= 1.0;
+                    }
+                }
 
                 if ui.button(b_text).clicked() || space_pressed {
                     self.running = !self.running;
                 }
                 ui.add_space(10.0);
                 ui.label(RichText::new("Frequenz:").size(20.0).strong());
+                ui.add_space(5.0);
                 ui.add(DragValue::new(&mut self.conf.rate).fixed_decimals(0).clamp_range(10.0..=800.0).suffix(" wpm"));
                 ui.add_space(10.0);
 
