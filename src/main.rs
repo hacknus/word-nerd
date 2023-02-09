@@ -17,7 +17,7 @@ use preferences::{AppInfo, Preferences};
 use rand::random;
 use io::read_words_from_file;
 
-use crate::gui::{GuiSettingsContainer, MyApp};
+use crate::gui::{SettingsContainer, MyApp};
 
 const APP_INFO: AppInfo = AppInfo { name: "Word Nerd", author: "Linus Leo Stöckli" };
 
@@ -72,9 +72,9 @@ fn main_thread(rate_lock: Arc<RwLock<f32>>,
 }
 
 fn main() {
-    let mut gui_settings = GuiSettingsContainer::default();
+    let mut gui_settings = SettingsContainer::default();
     let prefs_key = "config/gui";
-    let load_result = GuiSettingsContainer::load(&APP_INFO, prefs_key);
+    let load_result = SettingsContainer::load(&APP_INFO, prefs_key);
     if load_result.is_ok() {
         gui_settings = load_result.unwrap();
     } else {
@@ -105,7 +105,6 @@ fn main() {
                     load_rx);
     });
 
-
     let options = eframe::NativeOptions {
         drag_and_drop_support: true,
         initial_window_size: Option::from(vec2(gui_settings.x, gui_settings.y)),
@@ -122,6 +121,7 @@ fn main() {
     } else {
         visuals = Visuals::light();
     }
+    load_tx.send(gui_settings.file_path.clone()).expect("Failed to send file path!");
 
     eframe::run_native(
         "Word Nerd",

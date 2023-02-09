@@ -15,18 +15,20 @@ const MAX_FPS: f64 = 24.0;
 
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
-pub struct GuiSettingsContainer {
+pub struct SettingsContainer {
     pub rate: f32,
+    pub file_path: PathBuf,
     pub font_size: f32,
     pub dark_mode: bool,
     pub x: f32,
     pub y: f32,
 }
 
-impl GuiSettingsContainer {
-    pub fn default() -> GuiSettingsContainer {
-        return GuiSettingsContainer {
+impl SettingsContainer {
+    pub fn default() -> SettingsContainer {
+        return SettingsContainer {
             rate: 120.0,
+            file_path: PathBuf::from("abc.txt"),
             font_size: 50.0,
             dark_mode: false,
             x: 450.0,
@@ -38,8 +40,7 @@ impl GuiSettingsContainer {
 pub struct MyApp {
     running: bool,
     word: String,
-    picked_path: PathBuf,
-    gui_conf: GuiSettingsContainer,
+    conf: SettingsContainer,
     rate_lock: Arc<RwLock<f32>>,
     running_lock: Arc<RwLock<bool>>,
     word_lock: Arc<RwLock<String>>,
@@ -50,14 +51,13 @@ impl MyApp {
     pub fn new(rate_lock: Arc<RwLock<f32>>,
                running_lock: Arc<RwLock<bool>>,
                word_lock: Arc<RwLock<String>>,
-               gui_conf: GuiSettingsContainer,
+               conf: SettingsContainer,
                load_tx: Sender<PathBuf>,
     ) -> Self {
         Self {
             running: false,
             word: "Hallo".to_string(),
-            picked_path: PathBuf::new(),
-            gui_conf,
+            conf,
             rate_lock,
             running_lock,
             word_lock,
@@ -75,7 +75,7 @@ impl eframe::App for MyApp {
             }
 
             ui.vertical_centered(|ui| {
-                ui.label(RichText::new(&self.word).size(self.gui_conf.font_size).strong());
+                ui.label(RichText::new(&self.word).size(self.conf.font_size).strong());
             });
             ui.add_space(ui.available_size().y * 0.3);
 
@@ -86,17 +86,10 @@ impl eframe::App for MyApp {
                 } else {
                     b_text = RichText::new("Start").size(20.0).strong();
                 }
-                let events = ui.input().events.clone();
+
                 let mut space_pressed = false;
-                for event in &events {
-                    match event {
-                        egui::Event::Key { key, pressed,.. } => {
-                            if *key == Space && *pressed == false {
-                                space_pressed = true;
-                            }
-                        }
-                        _ => {}
-                    }
+                if ui.input(|i| i.key_released(egui::Key::Space)) {
+                    space_pressed = true;
                 }
 
                 if ui.button(b_text).clicked() || space_pressed {
@@ -104,20 +97,20 @@ impl eframe::App for MyApp {
                 }
                 ui.add_space(10.0);
                 ui.label(RichText::new("Frequenz:").size(20.0).strong());
-                ui.add(DragValue::new(&mut self.gui_conf.rate).fixed_decimals(0).clamp_range(10.0..=800.0).suffix(" wpm"));
+                ui.add(DragValue::new(&mut self.conf.rate).fixed_decimals(0).clamp_range(10.0..=800.0).suffix(" wpm"));
                 ui.add_space(10.0);
 
                 if ui.button("Datei öffnen").clicked() {
                     match rfd::FileDialog::new().pick_file() {
                         Some(path) =>
                             {
-                                self.picked_path = path;
+                                self.conf.file_path = path;
                             }
-                        None => self.picked_path = PathBuf::new()
+                        None => self.conf.file_path = PathBuf::new()
                     }
 
                     println!("opening a new file");
-                    match self.load_tx.send(self.picked_path.clone()) {
+                    match self.load_tx.send(self.conf.file_path.clone()) {
                         Ok(_) => {}
                         Err(err) => {
                             println!("error in scan_tx send: {err:?}");
@@ -129,21 +122,21 @@ impl eframe::App for MyApp {
             ui.horizontal(|ui|{
                 global_dark_light_mode_buttons(ui);
                 ui.label("  Schriftgrösse: ");
-                ui.add(egui::Slider::new(&mut self.gui_conf.font_size, 40.0..=200.0));
+                ui.add(egui::Slider::new(&mut self.conf.font_size, 40.0..=200.0));
             });
 
-            self.gui_conf.dark_mode = ui.visuals() == &Visuals::dark();
+            self.conf.dark_mode = ui.visuals() == &Visuals::dark();
         });
 
         if let Ok(mut write_guard) = self.rate_lock.write() {
-            *write_guard = self.gui_conf.rate.clone();
+            *write_guard = self.conf.rate.clone();
         }
         if let Ok(mut write_guard) = self.running_lock.write() {
             *write_guard = self.running.clone();
         }
 
-        self.gui_conf.x = ctx.used_size().x;
-        self.gui_conf.y = ctx.used_size().y;
+        self.conf.x = ctx.used_size().x;
+        self.conf.y = ctx.used_size().y;
 
         ctx.request_repaint();
 
@@ -152,7 +145,7 @@ impl eframe::App for MyApp {
 
     fn save(&mut self, _storage: &mut dyn Storage) {
         let prefs_key = "config/gui";
-        match self.gui_conf.save(&APP_INFO, prefs_key) {
+        match self.conf.save(&APP_INFO, prefs_key) {
             Ok(_) => {}
             Err(err) => {
                 println!("gui settings save failed: {:?}", err);

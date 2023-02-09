@@ -1,6 +1,6 @@
 [package]
 name = "word-nerd"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["Linus Leo Stöckli"]
 description = "A speed reader written in rust."
@@ -9,11 +9,11 @@ homepage = "https://github.com/hacknus/word-nerd"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-eframe = {version = "0.20.1", features = ["persistence"]}
-egui_extras = { version = "0.20.0", features = ["image"] }
+eframe = {version = "0.21.0", features = ["persistence"]}
+egui_extras = { version = "0.21.0", features = ["image"] }
 image = { version = "0.24", default-features = false, features = ["png"] }
 rand = "0.8.4"
-rfd = "0.10.0"
+rfd = "0.11.0"
 preferences = { git = "https://github.com/andybarron/preferences-rs" }
 serde = { version = "1.0", features = ["derive"] }
 
@@ -21,7 +21,7 @@ serde = { version = "1.0", features = ["derive"] }
 name = "Word Nerd"
 identifier = "com.hacknus.word_nerd"
 icon = ["./icons/icon-128.png", "./icons/icon-128x2.png"]
-version = "0.1.1"
+version = "0.1.2"
 copyright = "Copyright (c) Linus Leo Stöckli 2023. All rights reserved."
 category = "Developer Tool"
 short_description = "A speed reader written in rust."
@@ -35,5 +35,5 @@ dbg-name = false
 name = "Word Nerd"
 no-build = false
 output = "target/wix/WordNerdInstaller.msi"
-version = "0.1.1"
+version = "0.1.2"
 license = "GPL-3.0"
