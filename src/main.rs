@@ -141,5 +141,5 @@ fn main() {
                 load_tx,
             ))
         }),
-    );
+    ).expect("GUI did not start");
 }
