@@ -5,7 +5,6 @@ use std::sync::{Arc, RwLock};
 use std::time::Duration;
 use eframe::{egui, Storage};
 use eframe::egui::{ RichText, global_dark_light_mode_buttons, Visuals, DragValue};
-use eframe::egui::Key::Space;
 use preferences::{Preferences};
 use crate::{APP_INFO};
 use serde::{Deserialize, Serialize};
