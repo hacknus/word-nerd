@@ -4,20 +4,30 @@ use std::path::PathBuf;
 use std::vec::Vec;
 
 pub fn read_words_from_file(filename: &PathBuf) -> Option<Vec<String>> {
-    if let Ok(file) = File::open(filename) {
-        let reader = BufReader::new(file);
-        Some(reader
-            .lines()
-            .map(|l| match l {
-                Ok(s) => {
-                    s
+    match File::open(filename) {
+        Ok(file) => {
+            let reader = BufReader::new(file);
+            let mut lines = vec![];
+            for line in reader.lines() {
+                let line = line.unwrap();
+                if line.contains("\r\n") {
+                    for line in line.split("\r\n") {
+                        lines.push(line.to_owned());
+                    }
+                } else if line.contains("\n") {
+                    for line in line.split("\n") {
+                        lines.push(line.to_owned());
+                    }
+                } else if line.contains("\r") {
+                    for line in line.split("\r") {
+                        lines.push(line.to_owned());
+                    }
+                } else {
+                    lines.push(line);
                 }
-                Err(_) => {
-                    "Fehler in Datei".to_string()
-                }
-            })
-            .collect::<Vec<String>>())
-    } else {
-       None
+            }
+            Some(lines)
+        }
+        Err(_) => { None }
     }
 }
