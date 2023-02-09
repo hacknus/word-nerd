@@ -33,10 +33,11 @@ fn main_thread(rate_lock: Arc<RwLock<f32>>,
     let mut word;
     let file_path = PathBuf::from("abc.txt");
     let mut words = vec!["keine gültige Datei gefunden".to_string()];
-    match read_words_from_file(&file_path){
+    match read_words_from_file(&file_path) {
         None => {}
-        Some(w) => {words = w}
+        Some(w) => { words = w }
     }
+    let mut old_index = 0;
     loop {
         if let Ok(read_guard) = running_lock.read() {
             running = read_guard.clone();
@@ -58,8 +59,12 @@ fn main_thread(rate_lock: Arc<RwLock<f32>>,
 
         if running {
             // get random word out of words
-            let idx = random::<usize>() % words.len();
+            let mut idx = random::<usize>() % words.len();
+            if old_index == idx {
+                idx = (idx + 1) % words.len();
+            }
             word = words[idx].clone();
+            old_index = idx;
 
             if let Ok(mut write_guard) = word_lock.write() {
                 *write_guard = word.clone();
@@ -116,7 +121,7 @@ fn main() {
     let gui_running_lock = running_lock.clone();
 
     let visuals;
-    if gui_settings.dark_mode{
+    if gui_settings.dark_mode {
         visuals = Visuals::dark();
     } else {
         visuals = Visuals::light();
@@ -133,7 +138,7 @@ fn main() {
                 gui_running_lock,
                 gui_word_lock,
                 gui_settings,
-                load_tx
+                load_tx,
             ))
         }),
     );
