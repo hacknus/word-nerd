@@ -83,6 +83,8 @@
             Schedule='afterInstallInitialize'
             DowngradeErrorMessage='A newer version of [ProductName] is already installed. Setup will now exit.'/>
 
+        <Icon Id='SetupIcon' SourceFile='.\icons\icon.ico'/>
+
         <Media Id='1' Cabinet='media1.cab' EmbedCab='yes' DiskPrompt='CD-ROM #1'/>
         <Property Id='DiskPrompt' Value='word-nerd Installation'/>
 
@@ -126,8 +128,36 @@
                     </Directory>
                 </Directory>
             </Directory>
-        </Directory>
+            <Directory Id="ProgramMenuFolder">
+				<Directory Id="ApplicationProgramsFolder" Name="Word Nerd"/>
+			</Directory>
+			<Directory Id="DesktopFolder" Name="Desktop">
+			</Directory>        </Directory>
+<DirectoryRef Id="ApplicationProgramsFolder">
+			<Component Id="AppStart" Guid="d5886d8d-009d-4468-9db3-1ebc72f7c201">
+				<Shortcut Id="AppStartShortcut"
+					Name="Word Nerd"
+					Description="A speed reader for speech therapy."
+					Target="[APPLICATIONFOLDER]bin\word-nerd.exe"
+					WorkingDirectory="APPLICATIONROOTDIRECTORY"
+					Icon="SetupIcon"/>
+				<RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
+				<RegistryValue Root="HKCU" Key="Software\WordNerd" Name="StartShortcut" Type="integer" Value="1" KeyPath="yes"/>
+		   </Component>
+		</DirectoryRef>
 
+		<DirectoryRef Id="DesktopFolder">
+		    <Component Id="AppDesk" Guid="e7261bca-c8c3-4f7f-be81-eb3a7470bc7d">
+				<Shortcut Id="AppDeskShortcut"
+					Name="Word Nerd"
+					Description="A speed reader for speech therapy."
+					Target="[APPLICATIONFOLDER]bin\word-nerd.exe"
+					WorkingDirectory="APPLICATIONROOTDIRECTORY"
+					Icon="SetupIcon"/>
+				<RemoveFolder Id="DesktopFolder" On="uninstall"/>
+				<RegistryValue Root="HKCU" Key="Software\WordNerd" Name="DeskShortcut" Type="integer" Value="1" KeyPath="yes"/>
+			</Component>
+		</DirectoryRef>
         <Feature
             Id='Binaries'
             Title='Application'
@@ -155,6 +185,30 @@
             </Feature>
         </Feature>
 
+        <Feature
+        			Id='StartShort'
+        			Title='Start menu shortcut'
+        			Description='Add a shortcut to the start menu'
+        			Level='1'
+        			AllowAdvertise='no'
+        			Display='expand'
+        			Absent='disallow'>
+
+        			<ComponentRef Id="AppStart" />
+        		</Feature>
+
+        		<Feature
+        			Id='DeskShort'
+        			Title='Desktop shortcut'
+        			Description='Add a shortcut to the desktop'
+        			Level='1'
+        			AllowAdvertise='no'
+        			Display='expand'
+        			Absent='disallow'>
+
+        			<ComponentRef Id="AppDesk" />
+        		</Feature>
+
         <SetProperty Id='ARPINSTALLLOCATION' Value='[APPLICATIONFOLDER]' After='CostFinalize'/>
 
 
@@ -164,11 +218,10 @@
           The product icon is the graphic that appears in the Add/Remove
           Programs control panel for the application.
         -->
-        <Icon Id='ProductICO' SourceFile='icons\icon.ico'/>
-        <Property Id='ARPPRODUCTICON' Value='ProductICO' />
+
+        <Icon Id='ProductICO' SourceFile='.\icons\icon.ico'/>
 
         <Property Id='ARPHELPLINK' Value='https://github.com/hacknus/word-nerdt'/>
-        
         <UI>
             <UIRef Id='WixUI_FeatureTree'/>
             <!--
