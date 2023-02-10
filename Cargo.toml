@@ -1,6 +1,6 @@
 [package]
 name = "word-nerd"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 authors = ["Linus Leo Stöckli", "Lea Höfliger"]
 description = "A speed reader written in rust."
@@ -21,7 +21,7 @@ serde = { version = "1.0", features = ["derive"] }
 name = "Word Nerd"
 identifier = "com.hacknus.word_nerd"
 icon = ["./icons/icon-128.png", "./icons/icon-128x2.png"]
-version = "0.1.2"
+version = "0.1.3"
 copyright = "Copyright (c) Linus Leo Stöckli, Lea Höfliger 2023. All rights reserved."
 category = "Developer Tool"
 short_description = "A speed reader written in rust."
@@ -35,5 +35,5 @@ dbg-name = false
 name = "Word Nerd"
 no-build = false
 output = "target/wix/WordNerdInstaller.msi"
-version = "0.1.2"
+version = "0.1.3"
 license = "GPL-3.0"
