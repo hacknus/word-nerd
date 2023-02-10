@@ -4,7 +4,7 @@ use std::sync::mpsc::{Sender};
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 use eframe::{egui, Storage};
-use eframe::egui::{ RichText, global_dark_light_mode_buttons, Visuals, DragValue};
+use eframe::egui::{RichText, global_dark_light_mode_buttons, Visuals, DragValue};
 use preferences::{Preferences};
 use crate::{APP_INFO};
 use serde::{Deserialize, Serialize};
@@ -12,10 +12,17 @@ use serde::{Deserialize, Serialize};
 
 const MAX_FPS: f64 = 24.0;
 
+pub enum StepDir {
+    FORWARD,
+    BACKWARD
+}
+
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct SettingsContainer {
     pub rate: f32,
+    pub random: bool,
+    pub idx: isize,
     pub file_path: PathBuf,
     pub font_size: f32,
     pub dark_mode: bool,
@@ -27,6 +34,8 @@ impl SettingsContainer {
     pub fn default() -> SettingsContainer {
         return SettingsContainer {
             rate: 120.0,
+            idx: 0,
+            random: false,
             file_path: PathBuf::from("abc.txt"),
             font_size: 50.0,
             dark_mode: false,
@@ -40,26 +49,32 @@ pub struct MyApp {
     running: bool,
     word: String,
     conf: SettingsContainer,
+    random_lock: Arc<RwLock<bool>>,
     rate_lock: Arc<RwLock<f32>>,
     running_lock: Arc<RwLock<bool>>,
     word_lock: Arc<RwLock<String>>,
+    step_tx: Sender<StepDir>,
     load_tx: Sender<PathBuf>,
 }
 
 impl MyApp {
-    pub fn new(rate_lock: Arc<RwLock<f32>>,
+    pub fn new(random_lock: Arc<RwLock<bool>>,
+               rate_lock: Arc<RwLock<f32>>,
                running_lock: Arc<RwLock<bool>>,
                word_lock: Arc<RwLock<String>>,
                conf: SettingsContainer,
+               step_tx: Sender<StepDir>,
                load_tx: Sender<PathBuf>,
     ) -> Self {
         Self {
             running: false,
             word: "Hallo".to_string(),
             conf,
+            random_lock,
             rate_lock,
             running_lock,
             word_lock,
+            step_tx,
             load_tx,
         }
     }
@@ -100,6 +115,22 @@ impl eframe::App for MyApp {
                         self.conf.rate -= 1.0;
                     }
                 }
+                if ui.input(|i| i.key_pressed(egui::Key::ArrowLeft)) {
+                    match self.step_tx.send(StepDir::BACKWARD) {
+                        Ok(_) => {}
+                        Err(err) => {
+                            println!("error in step_tx send: {err:?}");
+                        }
+                    }
+                }
+                if ui.input(|i| i.key_pressed(egui::Key::ArrowRight)) {
+                    match self.step_tx.send(StepDir::FORWARD) {
+                        Ok(_) => {}
+                        Err(err) => {
+                            println!("error in step_tx send: {err:?}");
+                        }
+                    }
+                }
 
                 if ui.button(b_text).clicked() || space_pressed {
                     self.running = !self.running;
@@ -129,10 +160,13 @@ impl eframe::App for MyApp {
                 }
             });
             ui.add_space(ui.available_size().y - 15.0);
-            ui.horizontal(|ui|{
+            ui.horizontal(|ui| {
                 global_dark_light_mode_buttons(ui);
+                ui.add_space(10.0);
                 ui.label("  Schriftgrösse: ");
                 ui.add(egui::Slider::new(&mut self.conf.font_size, 40.0..=200.0));
+                ui.add_space(10.0);
+                ui.checkbox(&mut self.conf.random, "Random");
             });
 
             self.conf.dark_mode = ui.visuals() == &Visuals::dark();
@@ -144,7 +178,9 @@ impl eframe::App for MyApp {
         if let Ok(mut write_guard) = self.running_lock.write() {
             *write_guard = self.running.clone();
         }
-
+        if let Ok(mut write_guard) = self.random_lock.write() {
+            *write_guard = self.conf.random.clone();
+        }
         self.conf.x = ctx.used_size().x;
         self.conf.y = ctx.used_size().y;
 
