@@ -63,7 +63,7 @@
         Id='*'
         Name='word-nerd'
         UpgradeCode='0338D335-6868-43C2-84F0-FF0589C06FBC'
-        Manufacturer='Linus Leo Stöckli'
+        Manufacturer='Linus Leo Stöckli, Lea Höfliger'
         Language='1033'
         Codepage='1252'
         Version='$(var.Version)'>
@@ -71,7 +71,7 @@
         <Package Id='*'
             Keywords='Installer'
             Description='A speed reader written in rust.'
-            Manufacturer='Linus Leo Stöckli'
+            Manufacturer='Linus Leo Stöckli, Lea Höfliger'
             InstallerVersion='450'
             Languages='1033'
             Compressed='yes'

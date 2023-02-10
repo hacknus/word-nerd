@@ -2,7 +2,7 @@
 name = "word-nerd"
 version = "0.1.2"
 edition = "2021"
-authors = ["Linus Leo Stöckli"]
+authors = ["Linus Leo Stöckli", "Lea Höfliger"]
 description = "A speed reader written in rust."
 license = "GPL-3.0"
 homepage = "https://github.com/hacknus/word-nerd"
@@ -22,7 +22,7 @@ name = "Word Nerd"
 identifier = "com.hacknus.word_nerd"
 icon = ["./icons/icon-128.png", "./icons/icon-128x2.png"]
 version = "0.1.2"
-copyright = "Copyright (c) Linus Leo Stöckli 2023. All rights reserved."
+copyright = "Copyright (c) Linus Leo Stöckli, Lea Höfliger 2023. All rights reserved."
 category = "Developer Tool"
 short_description = "A speed reader written in rust."
 license = "GPL-3.0"
