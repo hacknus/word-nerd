@@ -1,33 +1,44 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-// hide console window on Windows in release
-extern crate serde;
-extern crate preferences;
-extern crate core;
-
 mod gui;
 mod io;
 
-use std::path::PathBuf;
-use std::thread;
-use eframe::egui::{vec2, Visuals};
-use std::sync::mpsc::{Receiver, Sender};
-use std::sync::{Arc, mpsc, RwLock};
-use std::time::{Duration};
-use preferences::{AppInfo, Preferences};
-use rand::random;
+// `src/main.rs`
+use crate::gui::{MyApp, SettingsContainer, StepDir};
+use eframe::egui;
+use eframe::egui::Visuals;
+use eframe::epaint::text::{FontInsert, FontPriority, InsertFontFamily};
 use io::read_words_from_file;
+use preferences::{AppInfo, Preferences};
+use rand::Rng;
+use std::path::PathBuf;
+use std::sync::mpsc::{Receiver, Sender};
+use std::sync::{mpsc, Arc, RwLock};
+use std::thread;
+use std::time::Duration;
 
-use crate::gui::{SettingsContainer, MyApp, StepDir};
-
-const APP_INFO: AppInfo = AppInfo { name: "Word Nerd", author: "Linus Leo Stöckli, Lea Höfliger" };
+const APP_INFO: AppInfo = AppInfo {
+    name: "Word Nerd",
+    author: "Linus Leo Stöckli, Lea Höfliger",
+};
 const HISTORY_SIZE: usize = 512;
 
-fn main_thread(rate_lock: Arc<RwLock<f32>>,
-               random_lock: Arc<RwLock<bool>>,
-               running_lock: Arc<RwLock<bool>>,
-               word_lock: Arc<RwLock<String>>,
-               step_rx: Receiver<StepDir>,
-               load_rx: Receiver<PathBuf>,
+fn add_font(ctx: &egui::Context) {
+    ctx.add_font(FontInsert::new(
+        "my_font",
+        egui::FontData::from_static(include_bytes!("../fonts/DCH-Basisschrift.ttf")),
+        vec![InsertFontFamily {
+            family: egui::FontFamily::Name("my_font".into()),
+            priority: FontPriority::Highest,
+        }],
+    ));
+}
+
+fn main_thread(
+    rate_lock: Arc<RwLock<f32>>,
+    random_lock: Arc<RwLock<bool>>,
+    running_lock: Arc<RwLock<bool>>,
+    word_lock: Arc<RwLock<String>>,
+    step_rx: Receiver<StepDir>,
+    load_rx: Receiver<PathBuf>,
 ) {
     // reads data from mutex, samples and saves if needed
     let mut rate = 120.0;
@@ -40,7 +51,7 @@ fn main_thread(rate_lock: Arc<RwLock<f32>>,
     let mut words = vec!["keine gültige Datei gefunden".to_string()];
     match read_words_from_file(&file_path) {
         None => {}
-        Some(w) => { words = w }
+        Some(w) => words = w,
     }
     let mut history = vec![idx];
     loop {
@@ -63,13 +74,13 @@ fn main_thread(rate_lock: Arc<RwLock<f32>>,
                     words = w;
                 }
             }
-            Err(..) => ()
+            Err(..) => (),
         }
 
         if running {
             if randomizer {
                 // get random word out of words
-                idx = random::<usize>() % words.len();
+                idx = rand::rng().random_range(0..words.len());
                 if *history.last().unwrap() == idx {
                     idx = (idx + 1) % words.len();
                 }
@@ -96,7 +107,7 @@ fn main_thread(rate_lock: Arc<RwLock<f32>>,
                             } else {
                                 if randomizer {
                                     // get random word out of words
-                                    idx = random::<usize>() % words.len();
+                                    idx = rand::rng().random_range(0..words.len());
                                     if *history.last().unwrap() == idx {
                                         idx = (idx + 1) % words.len();
                                     }
@@ -127,7 +138,7 @@ fn main_thread(rate_lock: Arc<RwLock<f32>>,
                         *write_guard = word.clone();
                     }
                 }
-                Err(..) => ()
+                Err(..) => (),
             }
         }
         if history.len() > HISTORY_SIZE {
@@ -167,18 +178,18 @@ fn main() {
     let main_running_lock = running_lock.clone();
 
     println!("starting main thread..");
-    thread::spawn(|| {
-        main_thread(main_rate_lock,
-                    main_random_lock,
-                    main_running_lock,
-                    main_word_lock,
-                    step_rx,
-                    load_rx);
+    thread::spawn(move || {
+        main_thread(
+            main_rate_lock,
+            main_random_lock,
+            main_running_lock,
+            main_word_lock,
+            step_rx,
+            load_rx,
+        );
     });
 
     let options = eframe::NativeOptions {
-        drag_and_drop_support: true,
-        initial_window_size: Option::from(vec2(gui_settings.x, gui_settings.y)),
         ..Default::default()
     };
 
@@ -193,14 +204,17 @@ fn main() {
     } else {
         visuals = Visuals::light();
     }
-    load_tx.send(gui_settings.file_path.clone()).expect("Failed to send file path!");
+    load_tx
+        .send(gui_settings.file_path.clone())
+        .expect("Failed to send file path!");
 
     eframe::run_native(
         "Word Nerd",
         options,
-        Box::new(|_cc| {
-            _cc.egui_ctx.set_visuals(visuals);
-            Box::new(MyApp::new(
+        Box::new(|cc| {
+            cc.egui_ctx.set_visuals(visuals);
+            add_font(&cc.egui_ctx);
+            Ok(Box::new(MyApp::new(
                 gui_random_lock,
                 gui_rate_lock,
                 gui_running_lock,
@@ -208,7 +222,8 @@ fn main() {
                 gui_settings,
                 step_tx,
                 load_tx,
-            ))
+            )))
         }),
-    ).expect("GUI did not start");
+    )
+    .expect("GUI did not start");
 }

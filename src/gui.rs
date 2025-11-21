@@ -1,22 +1,23 @@
-use core::f32;
+// `src/gui.rs`
+use crate::APP_INFO;
+use eframe::egui::{
+    DragValue, FontFamily, FontId, RichText,
+};
+use eframe::{egui, Storage};
+use preferences::Preferences;
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use std::sync::mpsc::{Sender};
+use std::sync::mpsc::Sender;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
-use eframe::{egui, Storage};
-use eframe::egui::{RichText, global_dark_light_mode_buttons, Visuals, DragValue};
-use preferences::{Preferences};
-use crate::{APP_INFO};
-use serde::{Deserialize, Serialize};
-
+use egui_theme_switch::global_theme_switch;
 
 const MAX_FPS: f64 = 24.0;
 
 pub enum StepDir {
     FORWARD,
-    BACKWARD
+    BACKWARD,
 }
-
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct SettingsContainer {
@@ -58,13 +59,14 @@ pub struct MyApp {
 }
 
 impl MyApp {
-    pub fn new(random_lock: Arc<RwLock<bool>>,
-               rate_lock: Arc<RwLock<f32>>,
-               running_lock: Arc<RwLock<bool>>,
-               word_lock: Arc<RwLock<String>>,
-               conf: SettingsContainer,
-               step_tx: Sender<StepDir>,
-               load_tx: Sender<PathBuf>,
+    pub fn new(
+        random_lock: Arc<RwLock<bool>>,
+        rate_lock: Arc<RwLock<f32>>,
+        running_lock: Arc<RwLock<bool>>,
+        word_lock: Arc<RwLock<String>>,
+        conf: SettingsContainer,
+        step_tx: Sender<StepDir>,
+        load_tx: Sender<PathBuf>,
     ) -> Self {
         Self {
             running: false,
@@ -89,7 +91,13 @@ impl eframe::App for MyApp {
             }
 
             ui.vertical_centered(|ui| {
-                ui.label(RichText::new(&self.word).size(self.conf.font_size).strong());
+                let font_id = FontId::new(self.conf.font_size, FontFamily::Name("my_font".into()));
+                ui.label(
+                    RichText::new(&self.word)
+                        .font(font_id)
+                        .size(self.conf.font_size)
+                        .strong(),
+                );
             });
             ui.add_space(ui.available_size().y * 0.3);
 
@@ -138,16 +146,20 @@ impl eframe::App for MyApp {
                 ui.add_space(10.0);
                 ui.label(RichText::new("Frequenz:").size(20.0).strong());
                 ui.add_space(5.0);
-                ui.add(DragValue::new(&mut self.conf.rate).fixed_decimals(0).clamp_range(10.0..=800.0).suffix(" wpm"));
+                ui.add(
+                    DragValue::new(&mut self.conf.rate)
+                        .fixed_decimals(0)
+                        .range(10.0..=800.0)
+                        .suffix(" wpm"),
+                );
                 ui.add_space(10.0);
 
                 if ui.button("Datei öffnen").clicked() {
                     match rfd::FileDialog::new().pick_file() {
-                        Some(path) =>
-                            {
-                                self.conf.file_path = path;
-                            }
-                        None => self.conf.file_path = PathBuf::new()
+                        Some(path) => {
+                            self.conf.file_path = path;
+                        }
+                        None => self.conf.file_path = PathBuf::new(),
                     }
 
                     println!("opening a new file");
@@ -161,15 +173,13 @@ impl eframe::App for MyApp {
             });
             ui.add_space(ui.available_size().y - 15.0);
             ui.horizontal(|ui| {
-                global_dark_light_mode_buttons(ui);
+                global_theme_switch(ui);
                 ui.add_space(10.0);
                 ui.label("  Schriftgrösse: ");
                 ui.add(egui::Slider::new(&mut self.conf.font_size, 40.0..=200.0));
                 ui.add_space(10.0);
                 ui.checkbox(&mut self.conf.random, "Random");
             });
-
-            self.conf.dark_mode = ui.visuals() == &Visuals::dark();
         });
 
         if let Ok(mut write_guard) = self.rate_lock.write() {
