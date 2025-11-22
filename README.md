@@ -10,15 +10,24 @@ characters per minute (CPM).
 
 Navigate through the words using the space bar (start/stop) and adjust the speed with arrow up/arrow down (in increments
 of 1, if shift is pressed in increments of 10). In manual mode, browse through the words with left and right arrow
-keys.  
+keys.
+
+## Font Installation
+
+This project uses the Deutschschweizer Basisschrift font. Due to licensing restrictions, the font file cannot be
+included in this repository.
+
+To use the application, please download the font from the official website:
+
+[Die Deutschschweizer Basisschrift](https://www.basisschrift.ch)
+
+After downloading, place the font file (`DCH-Basisschrift.ttf`) in the `fonts/` directory of the project.
 
 The source code can be run using ```cargo run --release``` or bundled to a platform-executable using
 ```cargo bundle --release```.  
 Currently [cargo bundle](https://github.com/burtonageo/cargo-bundle) only supports linux and macOS
 bundles [see github issue](https://github.com/burtonageo/cargo-bundle/issues/77).
 As a work-around we can use [cargo wix](https://github.com/volks73/cargo-wix) to create a windows installer.
-
-Add the [Basisschrift](https://www.basisschrift.ch) font in the `fonts` direcotry for best experience.
 
 It can be compiled and run on all platforms.
 Tested on:

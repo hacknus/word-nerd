@@ -30,6 +30,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Download and Extract DCH-Basisschrift.ttf (Windows)
+        if: contains(matrix.os, 'windows')
+        run: |
+          Invoke-WebRequest -Uri https://www.basisschrift.ch/sites/default/files/DCH-Basisschrift.ttf.zip -OutFile DCH-Basisschrift.ttf.zip
+          Expand-Archive -Path DCH-Basisschrift.ttf.zip -DestinationPath fonts
+          Remove-Item DCH-Basisschrift.ttf.zip
+
+      - name: Download and Extract DCH-Basisschrift.ttf (Linux)
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          curl -L -o DCH-Basisschrift.ttf.zip https://www.basisschrift.ch/sites/default/files/DCH-Basisschrift.ttf.zip
+          unzip DCH-Basisschrift.ttf.zip -d fonts/
+          rm DCH-Basisschrift.ttf.zip
+
+      - name: Download and Extract DCH-Basisschrift.ttf (macOS)
+        if: contains(matrix.os, 'macos')
+        run: |
+          curl -L -o DCH-Basisschrift.ttf.zip https://www.basisschrift.ch/sites/default/files/DCH-Basisschrift.ttf.zip
+          unzip DCH-Basisschrift.ttf.zip -d fonts/
+          rm DCH-Basisschrift.ttf.zip
+
+
       - name: Install Dependencies (Linux)
         if: contains(matrix.os, 'ubuntu')
         run: sudo apt-get update && sudo apt-get install -y libclang-dev libgtk-3-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev libudev-dev && sudo apt-get install -y libasound2-dev && sudo apt-get install -y cmake && cargo install --git https://github.com/burtonageo/cargo-bundle
@@ -42,21 +64,16 @@ jobs:
         if: contains(matrix.os, 'windows')
         run: cargo install --force cargo-wix && choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
 
-      - name: Set CARGO_FEATURES environment variable (Windows)
-        if: contains(matrix.os, 'windows')
-        run: |
-          echo "CARGO_FEATURES=self_update" >> $env:GITHUB_ENV
-
       - name: Build
-        run: cargo build --features self_update --release
+        run: cargo build  --release
 
       - name: Build .deb Package (Linux)
         if: contains(matrix.os, 'ubuntu')
-        run: cargo bundle --features self_update --release
+        run: cargo bundle  --release
 
       - name: Build .app Package (macOS)
         if: contains(matrix.os, 'macos')
-        run: cargo bundle --features self_update --release
+        run: cargo bundle  --release
 
       - name: Build .msi Package (Windows)
         if: contains(matrix.os, 'windows')
