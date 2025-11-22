@@ -8,6 +8,10 @@ words on one single line! An example is given in `manimatter.txt`.
 In the classic mode, the speed is set in words per minute (WPM). In the poem/paragraph mode, the speed is set in
 characters per minute (CPM).
 
+Navigate through the words using the space bar (start/stop) and adjust the speed with arrow up/arrow down (in increments
+of 1, if shift is pressed in increments of 10). In manual mode, browse through the words with left and right arrow
+keys.  
+
 The source code can be run using ```cargo run --release``` or bundled to a platform-executable using
 ```cargo bundle --release```.  
 Currently [cargo bundle](https://github.com/burtonageo/cargo-bundle) only supports linux and macOS

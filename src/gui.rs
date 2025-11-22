@@ -227,16 +227,18 @@ impl eframe::App for MyApp {
                     if ui.input(|i| i.key_released(egui::Key::Space)) {
                         space_pressed = true;
                     }
-                    if ui.input(|i| i.key_pressed(egui::Key::ArrowUp)) {
-                        if self.conf.rate <= 800.0 {
-                            self.conf.rate += 1.0;
+                    if ui.input(|i| i.key_pressed(egui::Key::ArrowUp) || i.key_pressed(egui::Key::ArrowDown)) {
+                        let shift = ui.input(|i| i.modifiers.shift);
+                        let step = if shift { 10.0 } else { 1.0 };
+
+                        if ui.input(|i| i.key_pressed(egui::Key::ArrowUp)) && self.conf.rate <= 800.0 - step {
+                            self.conf.rate += step;
+                        }
+                        if ui.input(|i| i.key_pressed(egui::Key::ArrowDown)) && self.conf.rate >= 10.0 + step {
+                            self.conf.rate -= step;
                         }
                     }
-                    if ui.input(|i| i.key_pressed(egui::Key::ArrowDown)) {
-                        if self.conf.rate >= 10.0 {
-                            self.conf.rate -= 1.0;
-                        }
-                    }
+
                     if ui.input(|i| i.key_pressed(egui::Key::ArrowLeft)) {
                         let _ = self.step_tx.send(StepDir::BACKWARD);
                     }

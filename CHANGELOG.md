@@ -12,3 +12,4 @@ All notable changes to the `Word Nerd` project will be documented in this file.
 * Added poem/paragraph mode
 * Updated dependencies
 * Minor bug fixes
+* Shift modifier for faster speed changes (increments of 10 instead of 1)
