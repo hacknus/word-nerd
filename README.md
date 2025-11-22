@@ -12,29 +12,6 @@ Navigate through the words using the space bar (start/stop) and adjust the speed
 of 1 and in increments of 10, if shift is pressed). In manual mode (stopped), you can browse through the words with left and right arrow
 keys.
 
-## Font Installation
-
-This project uses the Deutschschweizer Basisschrift font. Due to licensing restrictions, the font file cannot be
-included in this repository.
-
-To use the application, please download the font from the official website:
-
-[Die Deutschschweizer Basisschrift](https://www.basisschrift.ch)
-
-After downloading, place the font file (`DCH-Basisschrift.ttf`) in the `fonts/` directory of the project.
-
-The source code can be run using ```cargo run --release``` or bundled to a platform-executable using
-```cargo bundle --release```.  
-Currently [cargo bundle](https://github.com/burtonageo/cargo-bundle) only supports linux and macOS
-bundles [see github issue](https://github.com/burtonageo/cargo-bundle/issues/77).
-As a work-around we can use [cargo wix](https://github.com/volks73/cargo-wix) to create a windows installer.
-
-It can be compiled and run on all platforms.
-Tested on:
-
-- MacOS 12.4 Monterey x86
-- MacOS 15.5 Sequoia ARM
-- ...
 
 ## Installation
 
@@ -59,4 +36,42 @@ Install dependencies:
 ```sh
 sudo apt-get install libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev libasound2-dev libxkbcommon-x11-0 libx11-dev
 ```
+
+## Compile from source
+
+This project uses the Deutschschweizer Basisschrift font. Due to licensing restrictions, the font file cannot be
+included in this repository.
+
+To use the application, please download the font from the official website:
+
+[Die Deutschschweizer Basisschrift](https://www.basisschrift.ch)
+
+After downloading, place the font file `DCH-Basisschrift.ttf` in the `fonts/` directory of the project.
+
+On Linux you need to install these dependencies first:
+```sh
+sudo apt-get install libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev libasound2-dev libxkbcommon-x11-0 libx11-dev
+```
+
+The source code can be run using 
+```shell
+cargo run --release
+```
+or bundled to a platform-executable using
+```shell
+cargo bundle --release
+```
+Currently [cargo bundle](https://github.com/burtonageo/cargo-bundle) only supports Linux and macOS
+bundles [see github issue](https://github.com/burtonageo/cargo-bundle/issues/77).
+As a work-around we can use [cargo wix](https://github.com/volks73/cargo-wix) to create a Windows installer.
+```shell
+cargo wix
+```
+
+Tested on:
+
+- MacOS 12.4 Monterey x86
+- MacOS 15.5 Sequoia ARM
+- ...
+
 
