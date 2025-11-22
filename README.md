@@ -6,7 +6,7 @@ A cross-platform speed reader written in rust.
 Word Nerd now features the poem/paragraph mode, where you can load in a larger text file and it will scroll through the
 words on one single line! An example is given in `manimatter.txt`.
 In the classic mode, the speed is set in words per minute (WPM). In the poem/paragraph mode, the speed is set in
-characters per minute (CPM).
+characters per minute (CPM). A classic example is given in `abc.txt`.
 
 Navigate through the words using the space bar (start/stop) and adjust the speed with arrow up/arrow down (in increments
 of 1, if shift is pressed in increments of 10). In manual mode, browse through the words with left and right arrow
