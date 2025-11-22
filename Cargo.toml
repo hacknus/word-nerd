@@ -1,6 +1,6 @@
 [package]
 name = "word-nerd"
-version = "0.1.4"
+version = "1.0.0"
 edition = "2021"
 authors = ["Linus Leo Stöckli", "Lea Höfliger"]
 description = "A speed reader written in rust."
@@ -10,8 +10,6 @@ homepage = "https://github.com/hacknus/word-nerd"
 
 [dependencies]
 eframe = { version = "0.33", features = ["persistence"] }
-egui_extras = { version = "0.33", features = ["image"] }
-image = { version = "0.25", default-features = false, features = ["png"] }
 rand = "0.9"
 rfd = "0.15"
 preferences = { git = "https://github.com/andybarron/preferences-rs" }
