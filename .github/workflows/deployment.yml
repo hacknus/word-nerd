@@ -172,4 +172,25 @@ jobs:
           asset_path: word-nerd-${{ matrix.target }}.app.zip
           asset_name: word-nerd-${{ matrix.target }}.app.zip
           asset_content_type: application/zip
+
+      - name: Upload abc.txt
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: abc.txt
+          asset_name: abc.txt
+          asset_content_type: text/plain
+
+      - name: Upload manimatter.txt
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: manimatter.txt
+          asset_name: manimatter.txt
+          asset_content_type: text/plain
+
       
