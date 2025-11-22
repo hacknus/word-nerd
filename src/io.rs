@@ -3,7 +3,15 @@ use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::vec::Vec;
 
-pub fn read_words_from_file(filename: &PathBuf) -> Option<Vec<String>> {
+fn is_word_per_line(lines: &[String]) -> bool {
+    // true when every non-empty line contains at most one whitespace-separated token
+    lines
+        .iter()
+        .filter(|l| !l.trim().is_empty())
+        .all(|l| l.trim().split_whitespace().count() <= 1)
+}
+
+pub fn read_words_from_file(filename: &PathBuf) -> Option<(Vec<String>, bool)> {
     match File::open(filename) {
         Ok(file) => {
             let reader = BufReader::new(file);
@@ -26,8 +34,19 @@ pub fn read_words_from_file(filename: &PathBuf) -> Option<Vec<String>> {
                     lines.push(line);
                 }
             }
-            Some(lines)
+            if !is_word_per_line(&lines) {
+                // concatenate all lines with "   " as separator
+                lines = vec![lines
+                    .iter()
+                    .filter(|l| !l.trim().is_empty())
+                    .cloned()
+                    .collect::<Vec<String>>()
+                    .join("   ")];
+                Some((lines, true))
+            } else {
+                Some((lines, false))
+            }
         }
-        Err(_) => { None }
+        Err(_) => None,
     }
 }

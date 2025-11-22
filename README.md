@@ -1,25 +1,49 @@
 # Word Nerd
-A cross-platform speed reader written in rust.  
-![Screenshot of the application on macOS](screenshot.png)  
 
-The source code can be run using ```cargo run``` or bundled to a platform-executable using ```cargo bundle```.  
-Currently [cargo bundle](https://github.com/burtonageo/cargo-bundle) only supports linux and macOS bundles [see github issue](https://github.com/burtonageo/cargo-bundle/issues/77).
-As a work-around we can use [cargo wix](https://github.com/volks73/cargo-wix) to create a windows installer.  
+A cross-platform speed reader written in rust.  
+![Screenshot of the application on macOS](screenshot.png)
+
+Word Nerd now features the poem/paragraph mode, where you can load in a larger text file and it will scroll through the
+words on one single line! An example is given in `manimatter.txt`.
+In the classic mode, the speed is set in words per minute (WPM). In the poem/paragraph mode, the speed is set in
+characters per minute (CPM).
+
+The source code can be run using ```cargo run --release``` or bundled to a platform-executable using
+```cargo bundle --release```.  
+Currently [cargo bundle](https://github.com/burtonageo/cargo-bundle) only supports linux and macOS
+bundles [see github issue](https://github.com/burtonageo/cargo-bundle/issues/77).
+As a work-around we can use [cargo wix](https://github.com/volks73/cargo-wix) to create a windows installer.
 
 Add the [Basisschrift](https://www.basisschrift.ch) font in the `fonts` direcotry for best experience.
 
 It can be compiled and run on all platforms.
 Tested on:
+
 - MacOS 12.4 Monterey x86
-- ...  
+- MacOS 15.5 Sequoia ARM
+- ...
 
-On Debian 12 (Testing) the following error occurred:
-```
-Error: glib-2.0 was not found in the pkg-config search path.
-```
-solved through
-```
-sudo apt-get install libgtk-3-dev
+## Installation
+
+### Download Pre-built Executables
+
+[Binary bundles](https://github.com/hacknus/word-nerd/releases) are available for Linux, macOS, and
+Windows.
+
+#### macOS
+
+If you see the message `"Word Nerd is damaged and cannot be opened."` on macOS, run the following command in
+the terminal:
+
+```sh
+xattr -rd com.apple.quarantine Word\ Nerd.app
 ```
 
-One might have to delete the ```Cargo.lock``` file before compiling.  
+#### Linux
+
+Install dependencies:
+
+```sh
+sudo apt-get install libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev libasound2-dev libxkbcommon-x11-0 libx11-dev
+```
+

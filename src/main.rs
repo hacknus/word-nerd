@@ -1,10 +1,8 @@
 mod gui;
 mod io;
 
-// `src/main.rs`
 use crate::gui::{MyApp, SettingsContainer, StepDir};
 use eframe::egui;
-use eframe::egui::Visuals;
 use eframe::epaint::text::{FontInsert, FontPriority, InsertFontFamily};
 use io::read_words_from_file;
 use preferences::{AppInfo, Preferences};
@@ -36,6 +34,7 @@ fn main_thread(
     rate_lock: Arc<RwLock<f32>>,
     random_lock: Arc<RwLock<bool>>,
     running_lock: Arc<RwLock<bool>>,
+    mode_lock: Arc<RwLock<bool>>,
     word_lock: Arc<RwLock<String>>,
     step_rx: Receiver<StepDir>,
     load_rx: Receiver<PathBuf>,
@@ -51,12 +50,17 @@ fn main_thread(
     let mut words = vec!["keine gültige Datei gefunden".to_string()];
     match read_words_from_file(&file_path) {
         None => {}
-        Some(w) => words = w,
+        Some((w, mode)) => {
+            words = w;
+            if let Ok(mut write_guard) = mode_lock.write() {
+                *write_guard = mode;
+            }
+        }
     }
     let mut history = vec![idx];
     loop {
         if let Ok(read_guard) = running_lock.read() {
-            running = read_guard.clone();
+            running = *read_guard;
         }
 
         if let Ok(read_guard) = rate_lock.read() {
@@ -64,14 +68,17 @@ fn main_thread(
         }
 
         if let Ok(read_guard) = random_lock.read() {
-            randomizer = read_guard.clone();
+            randomizer = *read_guard;
         }
 
         match load_rx.recv_timeout(Duration::from_millis(1)) {
             Ok(fp) => {
                 // load file
-                if let Some(w) = read_words_from_file(&fp) {
+                if let Some((w, mode)) = read_words_from_file(&fp) {
                     words = w;
+                    if let Ok(mut write_guard) = mode_lock.write() {
+                        *write_guard = mode;
+                    }
                 }
             }
             Err(..) => (),
@@ -151,24 +158,20 @@ fn main_thread(
 fn main() {
     let mut gui_settings = SettingsContainer::default();
     let prefs_key = "config/gui";
-    let load_result = SettingsContainer::load(&APP_INFO, prefs_key);
-    if load_result.is_ok() {
-        gui_settings = load_result.unwrap();
+    if let Ok(loaded) = SettingsContainer::load(&APP_INFO, prefs_key) {
+        gui_settings = loaded;
     } else {
-        // save default settings
-        match gui_settings.save(&APP_INFO, prefs_key) {
-            Ok(_) => {}
-            Err(_) => {
-                println!("failed to save gui_settings");
-            }
-        }
+        let _ = gui_settings.save(&APP_INFO, prefs_key);
     }
 
+    // shared state
     let running_lock = Arc::new(RwLock::new(false));
     let random_lock = Arc::new(RwLock::new(gui_settings.random));
     let rate_lock = Arc::new(RwLock::new(gui_settings.rate));
     let word_lock = Arc::new(RwLock::new("Hallo!".to_string()));
+    let mode_lock = Arc::new(RwLock::new(false)); // false = word-per-line by default
 
+    // channels
     let (load_tx, load_rx): (Sender<PathBuf>, Receiver<PathBuf>) = mpsc::channel();
     let (step_tx, step_rx): (Sender<StepDir>, Receiver<StepDir>) = mpsc::channel();
 
@@ -176,6 +179,7 @@ fn main() {
     let main_random_lock = random_lock.clone();
     let main_word_lock = word_lock.clone();
     let main_running_lock = running_lock.clone();
+    let main_mode_lock = mode_lock.clone();
 
     println!("starting main thread..");
     thread::spawn(move || {
@@ -183,12 +187,14 @@ fn main() {
             main_rate_lock,
             main_random_lock,
             main_running_lock,
+            main_mode_lock,
             main_word_lock,
             step_rx,
             load_rx,
         );
     });
 
+    // prepare UI
     let options = eframe::NativeOptions {
         ..Default::default()
     };
@@ -197,28 +203,22 @@ fn main() {
     let gui_random_lock = random_lock.clone();
     let gui_word_lock = word_lock.clone();
     let gui_running_lock = running_lock.clone();
+    let gui_mode_lock = mode_lock.clone();
 
-    let visuals;
-    if gui_settings.dark_mode {
-        visuals = Visuals::dark();
-    } else {
-        visuals = Visuals::light();
-    }
-    load_tx
-        .send(gui_settings.file_path.clone())
-        .expect("Failed to send file path!");
+    // send initial file path to background thread
+    let _ = load_tx.send(gui_settings.file_path.clone());
 
     eframe::run_native(
         "Word Nerd",
         options,
-        Box::new(|cc| {
-            cc.egui_ctx.set_visuals(visuals);
+        Box::new(move |cc| {
             add_font(&cc.egui_ctx);
             Ok(Box::new(MyApp::new(
                 gui_random_lock,
                 gui_rate_lock,
                 gui_running_lock,
                 gui_word_lock,
+                gui_mode_lock,
                 gui_settings,
                 step_tx,
                 load_tx,
