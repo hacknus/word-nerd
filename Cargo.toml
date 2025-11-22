@@ -20,7 +20,7 @@ serde = { version = "1.0", features = ["derive"] }
 name = "Word Nerd"
 identifier = "com.hacknus.word_nerd"
 icon = ["./icons/icon-128.png", "./icons/icon-128x2.png"]
-copyright = "Copyright (c) Linus Leo Stöckli, Lea Höfliger 2023. All rights reserved."
+copyright = "Copyright (c) Linus Leo Stöckli, Lea Höfliger 2025. All rights reserved."
 category = "Developer Tool"
 short_description = "A speed reader written in rust."
 license = "GPL-3.0"
