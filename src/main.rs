@@ -2,8 +2,9 @@ mod gui;
 mod io;
 
 use crate::gui::{MyApp, SettingsContainer, StepDir};
-use eframe::egui;
+use eframe::egui::ViewportBuilder;
 use eframe::epaint::text::{FontInsert, FontPriority, InsertFontFamily};
+use eframe::{egui, icon_data};
 use io::read_words_from_file;
 use preferences::{AppInfo, Preferences};
 use rand::Rng;
@@ -196,6 +197,11 @@ fn main() {
 
     // prepare UI
     let options = eframe::NativeOptions {
+        viewport: ViewportBuilder::default()
+            .with_drag_and_drop(true)
+            .with_icon(
+                icon_data::from_png_bytes(&include_bytes!("../icons/icon.png")[..]).unwrap(),
+            ),
         ..Default::default()
     };
 
