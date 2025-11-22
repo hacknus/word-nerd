@@ -7,9 +7,7 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, RwLock};
-use std::time::{Duration, Instant};
-
-const MAX_FPS: f64 = 24.0;
+use std::time::Instant;
 
 pub enum StepDir {
     FORWARD,
@@ -154,6 +152,9 @@ impl eframe::App for MyApp {
                     FontId::new(self.conf.font_size, FontFamily::Name("my_font".into())),
                     ui.style().visuals.strong_text_color(),
                 );
+
+                ctx.request_repaint();
+
             } else {
                 self.last_instant = Instant::now();
 
@@ -181,6 +182,12 @@ impl eframe::App for MyApp {
                                 self.conf.file_path = path;
                             }
                             None => self.conf.file_path = PathBuf::new(),
+                        }
+
+                        self.running = false;
+                        self.word = "Drücke auf Start...".to_string();
+                        if let Ok(mut guard) = self.word_lock.write() {
+                            *guard = self.word.clone();
                         }
 
                         println!("opening a new file");
@@ -275,10 +282,6 @@ impl eframe::App for MyApp {
         }
         self.conf.x = ctx.used_size().x;
         self.conf.y = ctx.used_size().y;
-
-        ctx.request_repaint();
-
-        std::thread::sleep(Duration::from_millis((1000.0 / MAX_FPS) as u64));
     }
 
     fn save(&mut self, _storage: &mut dyn Storage) {

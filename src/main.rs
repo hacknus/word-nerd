@@ -39,6 +39,7 @@ fn main_thread(
     word_lock: Arc<RwLock<String>>,
     step_rx: Receiver<StepDir>,
     load_rx: Receiver<PathBuf>,
+    sync_tx: Sender<bool>,
 ) {
     // reads data from mutex, samples and saves if needed
     let mut rate = 120.0;
@@ -104,6 +105,7 @@ fn main_thread(
                 *write_guard = word.clone();
             }
             std::thread::sleep(Duration::from_millis((60.0 / rate * 1000.0) as u64));
+            sync_tx.send(true).expect("sync_tx send failed");
         } else {
             match step_rx.recv_timeout(Duration::from_millis(1)) {
                 Ok(step) => {
@@ -145,6 +147,7 @@ fn main_thread(
                     if let Ok(mut write_guard) = word_lock.write() {
                         *write_guard = word.clone();
                     }
+                    sync_tx.send(true).expect("sync_tx send failed");
                 }
                 Err(..) => (),
             }
@@ -175,6 +178,7 @@ fn main() {
     // channels
     let (load_tx, load_rx): (Sender<PathBuf>, Receiver<PathBuf>) = mpsc::channel();
     let (step_tx, step_rx): (Sender<StepDir>, Receiver<StepDir>) = mpsc::channel();
+    let (sync_tx, sync_rx): (Sender<bool>, Receiver<bool>) = mpsc::channel();
 
     let main_rate_lock = rate_lock.clone();
     let main_random_lock = random_lock.clone();
@@ -192,6 +196,7 @@ fn main() {
             main_word_lock,
             step_rx,
             load_rx,
+            sync_tx,
         );
     });
 
@@ -219,6 +224,12 @@ fn main() {
         options,
         Box::new(move |cc| {
             add_font(&cc.egui_ctx);
+            let repaint_signal = cc.egui_ctx.clone();
+            thread::spawn(move || loop {
+                if sync_rx.recv().is_ok() {
+                    repaint_signal.request_repaint();
+                }
+            });
             Ok(Box::new(MyApp::new(
                 gui_random_lock,
                 gui_rate_lock,
